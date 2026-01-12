@@ -11,13 +11,10 @@
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference
-      Include="..\..\Perigon\Perigon.AspNetCore.SourceGeneration\Perigon.AspNetCore.SourceGeneration.csproj"
-      OutputItemType="Analyzer"
-      ReferenceOutputAssembly="false"
-    />
+    <ProjectReference Include="..\..\Perigon\Perigon.AspNetCore.SourceGeneration\Perigon.AspNetCore.SourceGeneration.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\Definition\ServiceDefaults\ServiceDefaults.csproj" />
     <ProjectReference Include="..\..\Modules\CommonMod\CommonMod.csproj" />
+    <ProjectReference Include="..\..\Modules\BlogMod\BlogMod.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Middleware\" />

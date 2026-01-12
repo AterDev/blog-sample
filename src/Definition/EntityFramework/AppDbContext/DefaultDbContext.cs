@@ -1,5 +1,5 @@
-
-
+using Entity.UserMod;
+using Entity.BlogMod;
 
 namespace EntityFramework.AppDbContext;
 
@@ -10,60 +10,38 @@ namespace EntityFramework.AppDbContext;
 public partial class DefaultDbContext(DbContextOptions<DefaultDbContext> options)
     : ContextBase(options)
 {
-    #region CMSMod
-    
-    
-    #endregion
-
-    #region SystemMod
-    
-    
-    
-    
-
-    /// <summary>
-    /// 菜单
-    /// </summary>
-    
-    
-
-    /// <summary>
-    /// 权限组
-    /// </summary>
-    
-    
-    
-    #endregion
-
+    public DbSet<User> Users { get; set; }
+    public DbSet<Blog> Blogs { get; set; }
+    public DbSet<BlogCategory> BlogCategories { get; set; }
+    public DbSet<BlogCategoryRelation> BlogCategoryRelations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        builder.Entity<SystemLogs>().Ignore(e => e.IsDeleted);
 
-        builder
-            .Entity<SystemUser>()
-            .HasMany(u => u.SystemRoles)
-            .WithMany(r => r.Users)
-            .UsingEntity<SystemUserRole>(
-                j => j.HasOne(ur => ur.Role).WithMany().HasForeignKey(ur => ur.RoleId),
-                j => j.HasOne(ur => ur.User).WithMany().HasForeignKey(ur => ur.UserId),
-                j =>
-                {
-                    j.HasKey(ur => ur.Id);
-                }
-            );
-        builder
-            .Entity<SystemMenu>()
-            .HasMany(u => u.SystemRoles)
-            .WithMany(r => r.SystemMenus)
-            .UsingEntity<SystemMenuRole>(
-                j => j.HasOne(ur => ur.SystemRole).WithMany().HasForeignKey(ur => ur.RoleId),
-                j => j.HasOne(ur => ur.SystemMenu).WithMany().HasForeignKey(ur => ur.MenuId),
-                j =>
-                {
-                    j.HasKey(ur => ur.Id);
-                }
-            );
+        // 配置博客与作者的关系
+        builder.Entity<Blog>()
+            .HasOne(b => b.Author)
+            .WithMany()
+            .HasForeignKey(b => b.AuthorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 配置博客与分类的多对多关系（通过中间表）
+        builder.Entity<BlogCategoryRelation>()
+            .HasOne(bcr => bcr.Blog)
+            .WithMany(b => b.BlogCategoryRelations)
+            .HasForeignKey(bcr => bcr.BlogId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<BlogCategoryRelation>()
+            .HasOne(bcr => bcr.Category)
+            .WithMany(c => c.BlogCategoryRelations)
+            .HasForeignKey(bcr => bcr.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 配置唯一索引（BlogId + CategoryId）
+        builder.Entity<BlogCategoryRelation>()
+            .HasIndex(bcr => new { bcr.BlogId, bcr.CategoryId })
+            .IsUnique();
     }
 }
