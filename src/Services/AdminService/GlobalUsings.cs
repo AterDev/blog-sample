@@ -7,6 +7,7 @@ global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Mvc;
 global using ServiceDefaults;
 global using Share;
+global using Share.Exceptions;
 global using Share.Implement;
 
 global using Microsoft.Extensions.DependencyInjection;
@@ -17,5 +18,6 @@ global using Perigon.AspNetCore;
 global using Perigon.AspNetCore.Toolkit.Services;
 global using Entity.UserMod;
 global using UserMod.Managers;
+global using CommonMod.Managers;
 global using Entity.BlogMod;
 global using BlogMod.Managers;

@@ -12,7 +12,7 @@ public class BlogController(
     ) : RestControllerBase<BlogManager>(localizer, manager, user, logger)
 {
     /// <summary>
-    /// list 博客 with page ✍️
+    /// list 博客 with page ✅
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
@@ -30,9 +30,8 @@ public class BlogController(
     [HttpPost]
     public async Task<ActionResult<Blog>> AddAsync(BlogAddDto dto)
     {
-        
         var entity = await _manager.AddAsync(dto);
-        return CreatedAtAction(nameof(DetailAsync), new { id = entity.Id }, entity);
+        return CreatedAtRoute(null, new { id = entity.Id }, entity);
     }
 
     /// <summary>

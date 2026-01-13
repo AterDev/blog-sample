@@ -1,33 +1,52 @@
 @AdminService_HostAddress = https://localhost:17001/api
 
-// @name auth
-POST {{AdminService_HostAddress}}/systemuser/authorize
+POST {{AdminService_HostAddress}}/user
 Accept: application/json
 Content-Type: application/json
 
 {
-  "email": "admin@default.com",
+  "userName": "admin@default.com",
+  "password": "Perigon.2026",
+  "nickName": "Admin User"
+}
+
+### 
+
+// @name auth
+POST {{AdminService_HostAddress}}/user/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "username": "admin@default.com",
   "password": "Perigon.2026"
 }
 
 ###
 
-GET {{AdminService_HostAddress}}/systemuser/userinfo
+PATCH {{AdminService_HostAddress}}/user/019bb5e6-450e-7bfc-a1c5-3006f1d74d5b
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{auth.response.body.$.accessToken}}
+
+{
+  "password": "Perigon.2026"
+}
+
+###
+
+GET {{AdminService_HostAddress}}/user/detail
 Accept: application/json
 Authorization: Bearer {{auth.response.body.$.accessToken}}
 
 ###
-GET {{AdminService_HostAddress}}/systemrole
-Accept: application/json
-Authorization: Bearer {{auth.response.body.$.accessToken}}
 
-
-### 
-PATCH {{AdminService_HostAddress}}/systemrole/019addbb-ddb8-757d-b10e-e4394017b3d7
+POST {{AdminService_HostAddress}}/BlogCategory
 Accept: application/json
-Authorization: Bearer {{auth.response.body.$.accessToken}}
 Content-Type: application/json
+Authorization: Bearer {{auth.response.body.$.accessToken}}
 
 {
-  "name": "AdminUser"
+  "name": "Technology",
+  "description": "All about the latest in tech."
 }

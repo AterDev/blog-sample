@@ -218,6 +218,18 @@
   <data name="NoPermission" xml:space="preserve">
     <value>没有操作权限</value>
   </data>
+  <data name="InvalidUserNameOrPassword" xml:space="preserve">
+    <value>用户名或密码错误</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>用户不存在</value>
+  </data>
+  <data name="FileIsEmpty" xml:space="preserve">
+    <value>文件为空</value>
+  </data>
+  <data name="FileTypeNotAllowed" xml:space="preserve">
+    <value>不允许的文件类型</value>
+  </data>
   <data name="TenantNotExist" xml:space="preserve">
     <value>租户不存在</value>
   </data>

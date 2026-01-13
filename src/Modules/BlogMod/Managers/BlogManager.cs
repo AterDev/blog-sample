@@ -171,13 +171,12 @@ public class BlogManager(
         {
             return false;
         }
-        // TODO:事务处理
         if (ids.Count() == 1)
         {
             Guid id = ids.First();
             if (await HasPermissionAsync(id))
             {
-                await ExecuteInTransactionAsync<bool>(async () =>
+                return await ExecuteInTransactionAsync<bool>(async () =>
                 {
                     var relations = await _dbContext.BlogCategoryRelations
                                        .Where(r => id == r.BlogId)
@@ -194,7 +193,7 @@ public class BlogManager(
             var ownedIds = await GetOwnedIdsAsync(ids);
             if (ownedIds.Any())
             {
-                await ExecuteInTransactionAsync<bool>(async () =>
+                return await ExecuteInTransactionAsync<bool>(async () =>
                 {
                     var relations = await _dbContext.BlogCategoryRelations
                         .Where(r => ownedIds.Contains(r.BlogId))

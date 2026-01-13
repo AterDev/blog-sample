@@ -1,8 +1,8 @@
-﻿using System.Net.Http.Headers;
+﻿using Share.Models.Auth;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Share.Models.Auth;
-using SystemMod.Models;
 using TUnit.Core.Interfaces;
+using UserMod.Models.UserDtos;
 
 namespace ApiTest.Data;
 
@@ -19,18 +19,25 @@ public class TestHttpClientData : IAsyncInitializer, IAsyncDisposable
         {
             await GlobalHooks.NotificationService
                 .WaitForResourceAsync("AdminService", KnownResourceStates.Running)
-                .WaitAsync(TimeSpan.FromSeconds(30));
+                .WaitAsync(TimeSpan.FromSeconds(10));
         }
+        await Task.Delay(3000); // Allow some time for the service to be fully ready
 
         // Authenticate once and set bearer token for subsequent requests
-        var loginDto = new SystemLoginDto
+        var loginDto = new LoginDto
         {
-            Email = "admin@default.com",
+            UserName = "admin@default.com",
             Password = "Perigon.2026",
         };
 
-        using var resp = await HttpClient.PostAsJsonAsync("/api/systemUser/authorize", loginDto);
-        resp.EnsureSuccessStatusCode();
+        using var resp = await HttpClient.PostAsJsonAsync("/api/user/login", loginDto);
+        var content = await resp.Content.ReadAsStringAsync();
+        if (!resp.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException(
+                $"Failed to login for tests. Status: {resp.StatusCode}, Content: {content}");
+        }
+
         var token = await resp.Content.ReadFromJsonAsync<AccessTokenDto>();
         if (token is null || string.IsNullOrWhiteSpace(token.AccessToken))
         {

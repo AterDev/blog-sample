@@ -14,10 +14,8 @@ public class UserAddDto
     /// <summary>
     /// 密码
     /// </summary>
-    // [MaxLength(100)]
-    // public string PasswordHash { get; set; } = default!;
     [MaxLength(100)]
-    public string Salt { get; set; } = default!;
+    public string Password { get; set; } = default!;
     /// <summary>
     /// 昵称
     /// </summary>

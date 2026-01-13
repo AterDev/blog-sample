@@ -7,13 +7,13 @@ var aspireSetting = AppSettingsHelper.LoadAspireSettings(builder.Configuration);
 IResourceBuilder<IResourceWithConnectionString>? database = null;
 IResourceBuilder<IResourceWithConnectionString>? cache = null;
 
+var isTesting = builder.Configuration["ASPIRE_ENVIRONMENT"]?.ToLowerInvariant() == "testing";
+
 // if you have exist resource, you can set connection string here, without create container
 // database = builder.AddConnectionString(AppConst.Default, "");
-// nats = builder.AddConnectionString("mq", "");
-// qdrant = builder.AddConnectionString("qdrant", "");
 
 #region infrastructure
-var defaultName = "blog_sample_dev";
+var defaultName = isTesting ? "blog_sample_test" : "blog_sample_dev";
 var devPassword = builder.AddParameter(
     "dev-password",
     value: aspireSetting.DevPassword,
@@ -26,6 +26,7 @@ _ = aspireSetting.DatabaseType?.ToLowerInvariant() switch
     "postgresql" => database = builder
         .AddPostgres(name: "Database", password: devPassword, port: aspireSetting.DbPort)
         .WithImageTag("18.1-alpine")
+        .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
         .AddDatabase(AppConst.Default, databaseName: defaultName),
     "sqlserver" => database = builder
@@ -42,6 +43,7 @@ _ = aspireSetting.CacheType?.ToLowerInvariant() switch
     _ => cache = builder
         .AddRedis("Cache", password: devPassword, port: aspireSetting.CachePort)
         .WithImageTag("8.2-alpine")
+        .WithLifetime(ContainerLifetime.Persistent)
         .WithDataVolume()
         .WithPersistence(interval: TimeSpan.FromMinutes(5)),
 };
@@ -56,9 +58,8 @@ cache?.WithParentRelationship(infrastructureGroup);
 var serviceGroup = builder.AddGroup("Services", "Globe");
 var migration = builder.AddProject<Projects.MigrationService>("MigrationService")
     .WithParentRelationship(serviceGroup);
-var apiService = builder.AddProject<Projects.ApiService>("ApiService").WaitForCompletion(migration)
-    .WithParentRelationship(serviceGroup);
-var adminService = builder.AddProject<Projects.AdminService>("AdminService").WaitForCompletion(migration)
+var adminService = builder.AddProject<Projects.AdminService>("AdminService")
+    .WaitForCompletion(migration)
     .WithParentRelationship(serviceGroup);
 
 // run frontend app, you should install npm packages first
@@ -71,13 +72,11 @@ var adminService = builder.AddProject<Projects.AdminService>("AdminService").Wai
 if (database != null)
 {
     migration.WithReference(database).WaitFor(database);
-    apiService.WithReference(database);
     adminService.WithReference(database);
 }
 if (cache != null)
 {
     migration.WithReference(cache).WaitFor(cache);
-    apiService.WithReference(cache);
     adminService.WithReference(cache);
 }
 # endregion

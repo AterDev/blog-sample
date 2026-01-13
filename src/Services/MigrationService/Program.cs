@@ -11,6 +11,8 @@ builder.Services.AddOpenTelemetry()
 
 var databaseType = builder.Configuration["Components:Database"]?.ToLowerInvariant() ?? "postgresql";
 
+
+var conn = builder.Configuration.GetConnectionString(AppConst.Default);
 if (databaseType == "postgresql")
 {
     builder.AddNpgsqlDbContext<DefaultDbContext>(AppConst.Default);

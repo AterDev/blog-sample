@@ -30,9 +30,8 @@ public class BlogCategoryController(
     [HttpPost]
     public async Task<ActionResult<BlogCategory>> AddAsync(BlogCategoryAddDto dto)
     {
-        
         var entity = await _manager.AddAsync(dto);
-        return CreatedAtAction(nameof(DetailAsync), new { id = entity.Id }, entity);
+        return CreatedAtRoute(null, new { id = entity.Id }, entity);
     }
 
     /// <summary>

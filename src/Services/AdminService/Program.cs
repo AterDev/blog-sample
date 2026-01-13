@@ -39,4 +39,14 @@ app.MapDefaultEndpoints();
 // 使用中间件
 app.UseMiddlewareServices();
 
-await app.RunAsync();
+
+using (app)
+{
+    // 在启动前执行初始化操作
+    await using (var scope = app.Services.CreateAsyncScope())
+    {
+        IServiceProvider provider = scope.ServiceProvider;
+        await UserMod.InitModule.InitializeAsync(provider);
+    }
+    app.Run();
+}
