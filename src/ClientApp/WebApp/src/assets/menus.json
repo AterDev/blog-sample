@@ -1,44 +1,78 @@
 [
-    {
-        "name": "menu.system",
-        "path": null,
-        "accessCode": "system",
-        "icon": "admin_panel_settings",
+  {
+    "name": "menu.user",
+    "path": null,
+    "accessCode": "user",
+    "icon": "manage_accounts",
+    "sort": 1,
+    "menuType": 0,
+    "children": [
+      {
+        "name": "menu.userDetail",
+        "path": "/user/detail",
+        "accessCode": "user-detail",
+        "icon": "person",
+        "sort": 1,
+        "menuType": 0
+      },
+      {
+        "name": "menu.changePassword",
+        "path": "/user/password",
+        "accessCode": "user-password",
+        "icon": "lock",
         "sort": 2,
-        "menuType": 0,
-        "children": [
-            {
-                "name": "menu.systemRole",
-                "path": "/system-role",
-                "accessCode": "system-role",
-                "icon": "groups",
-                "sort": 0,
-                "menuType": 0
-            },
-            {
-                "name": "menu.systemUser",
-                "path": "/system-user",
-                "accessCode": "system-user",
-                "icon": "manage_accounts",
-                "sort": 1,
-                "menuType": 0
-            },
-            {
-                "name": "menu.systemLogs",
-                "path": "/system-logs",
-                "accessCode": "system-logs",
-                "icon": "manage_search",
-                "sort": 3,
-                "menuType": 0
-            },
-            {
-                "name": "menu.systemConfig",
-                "path": "/system-config",
-                "accessCode": "system-config",
-                "icon": "settings",
-                "sort": 4,
-                "menuType": 0
-            }
-        ]
-    }
+        "menuType": 0
+      }
+    ]
+  },
+  {
+    "name": "menu.blog",
+    "path": null,
+    "accessCode": "blog",
+    "icon": "article",
+    "sort": 2,
+    "menuType": 0,
+    "children": [
+      {
+        "name": "menu.blogList",
+        "path": "/blog/list",
+        "accessCode": "blog-list",
+        "icon": "list",
+        "sort": 1,
+        "menuType": 0
+      },
+      {
+        "name": "menu.blogDetail",
+        "path": "/blog/detail",
+        "accessCode": "blog-detail",
+        "icon": "description",
+        "sort": 2,
+        "menuType": 0
+      },
+      {
+        "name": "menu.blogAdd",
+        "path": "/blog/add",
+        "accessCode": "blog-add",
+        "icon": "add_circle",
+        "sort": 3,
+        "menuType": 0
+      },
+      {
+        "name": "menu.blogEdit",
+        "path": "/blog/edit",
+        "accessCode": "blog-edit",
+        "icon": "edit",
+        "sort": 4,
+        "menuType": 0
+      },
+      {
+        "name": "menu.blogCategory",
+        "path": "/blog/category",
+        "accessCode": "blog-category",
+        "icon": "category",
+        "sort": 5,
+        "menuType": 0
+      }
+    ]
+  }
 ]

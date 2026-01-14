@@ -1,0 +1,55 @@
+import { Component, Inject, OnInit, Optional, signal } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+import { AdminClient } from 'src/app/services/admin-client.service';
+import { BlogDetailDto } from 'src/app/services/admin-client.service';
+import { Router, ActivatedRoute } from '@angular/router';
+import { TranslocoModule } from '@jsverse/transloco';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-blog-detail',
+  templateUrl: './detail.html',
+  standalone: true,
+  imports: [
+    CommonModule, MatButtonModule, MatIconModule, MatListModule, MatDialogModule, TranslocoModule
+  ]
+})
+export class DetailComponent implements OnInit {
+  isDialog = false;
+  id: string | null = null;
+  data = signal<BlogDetailDto | null>(null);
+
+  constructor(
+    private adminClient: AdminClient,
+    private router: Router,
+    private route: ActivatedRoute,
+    @Optional() public dialogRef: MatDialogRef<DetailComponent>,
+    @Optional() @Inject(MAT_DIALOG_DATA) public dialogData: any
+  ) {
+    this.isDialog = !!this.dialogRef;
+  }
+
+  ngOnInit(): void {
+    this.id = this.isDialog ? this.dialogData.id : this.route.snapshot.params['id'];
+    if (this.id) {
+      this.getDetail();
+    }
+  }
+
+  getDetail() {
+    this.adminClient.blog.detail(this.id!).subscribe(res => {
+      this.data.set(res);
+    });
+  }
+
+  back() {
+    if (this.isDialog) {
+      this.dialogRef.close();
+    } else {
+      this.router.navigate(['../../list']);
+    }
+  }
+}

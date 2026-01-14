@@ -1,0 +1,21 @@
+@{
+    var modelNameCamel = ModelName.ToCamelCase();
+}
+<h2 mat-dialog-title>{{ (isDialog ? 'common.view' : 'menu.@modelNameCamel') | transloco }}</h2>
+<mat-dialog-content>
+  <mat-list *ngIf="data()">
+    @foreach(var prop in DetailPropertyInfos) {
+      var propCamel = prop.Name.ToCamelCase();
+    <mat-list-item>
+      <span matListItemTitle>{{ '@(modelNameCamel).@(propCamel)' | transloco }}</span>
+      <span matListItemLine>{{ data()?.@propCamel }}</span>
+    </mat-list-item>
+    }
+  </mat-list>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="back()">
+    <mat-icon>arrow_back</mat-icon>
+    {{ 'common.cancel' | transloco }}
+  </button>
+</mat-dialog-actions>

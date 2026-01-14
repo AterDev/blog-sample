@@ -9,8 +9,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { I18N_KEYS } from 'src/app/share/i18n-keys';
 import { initStarfield } from './starfield';
 import { form, Field, required, email, FieldState, minLength, maxLength, ValidationError } from '@angular/forms/signals'
-import { SystemLoginDto } from 'src/app/services/admin/models/system-mod/system-login-dto.model';
 import { translateValidationError } from 'src/app/share/validation-helpers';
+import { LoginDto } from 'src/app/services/admin/models/user-mod/login-dto.model';
 
 
 @Component({
@@ -28,27 +28,26 @@ export class Login implements OnInit, AfterViewInit {
     private router: Router
   ) {
     if (authService.isLogin) {
-      this.router.navigate(['/system-role']);
+      this.router.navigate(['/index']);
     }
   }
 
-  loginModel = signal<SystemLoginDto>({
-    email: '',
+  loginModel = signal<LoginDto>({
+    userName: '',
     password: ''
   })
 
   loginForm = form(this.loginModel, (schema) => {
-    required(schema.email);
-    email(schema.email);
-    minLength(schema.email, 4);
-    maxLength(schema.email, 100);
+    required(schema.userName);
+    minLength(schema.userName, 4);
+    maxLength(schema.userName, 100);
     required(schema.password);
     minLength(schema.password, 6);
     maxLength(schema.password, 60);
   });
 
-  get email() {
-    return this.loginForm.email;
+  get username() {
+    return this.loginForm.userName;
   }
   get password() {
     return this.loginForm.password;
@@ -76,7 +75,7 @@ export class Login implements OnInit, AfterViewInit {
   doLogin(): void {
     const data = this.loginForm().value();
     // 登录接口
-    this.adminClient.systemUser.login(data)
+    this.adminClient.user.login(data)
       .subscribe(res => {
         this.authService.saveToken(res);
         this.getUserInfo();
@@ -84,10 +83,10 @@ export class Login implements OnInit, AfterViewInit {
   }
 
   getUserInfo(): void {
-    this.adminClient.systemUser.getUserInfo()
+    this.adminClient.user.detail()
       .subscribe(res => {
         this.authService.saveUserInfo(res);
-        this.router.navigate(['/system-role']);
+        this.router.navigate(['/index']);
       });
   }
 

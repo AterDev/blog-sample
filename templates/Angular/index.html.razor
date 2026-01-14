@@ -1,0 +1,65 @@
+@{
+    var modelNameCamel = ModelName.ToCamelCase();
+}
+<div class="container">
+  <mat-toolbar>
+    <div class="filter-row">
+      @foreach(var prop in FilterPropertyInfos) {
+        var propCamel = prop.Name.ToCamelCase();
+        if (prop.Type == "string") {
+      <mat-form-field appearance="outline">
+        <mat-label>{{ '@(modelNameCamel).@(propCamel)' | transloco }}</mat-label>
+        <input matInput [field]="filterForm.@propCamel" (keyup.enter)="getList()">
+      </mat-form-field>
+        } else if (prop.IsEnum) {
+      <mat-form-field appearance="outline">
+        <mat-label>{{ '@(modelNameCamel).@(propCamel)' | transloco }}</mat-label>
+        <mat-select [field]="filterForm.@propCamel" (selectionChange)="getList()">
+          <mat-option [value]="null">{{ 'common.all' | transloco }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+        } else if (prop.Type == "bool") {
+      <mat-slide-toggle [field]="filterForm.@propCamel" (change)="getList()">
+        {{ '@(modelNameCamel).@(propCamel)' | transloco }}
+      </mat-slide-toggle>
+        }
+      }
+      <button mat-flat-button color="primary" (click)="getList()">{{ 'common.search' | transloco }}</button>
+      <span class="spacer"></span>
+      <button mat-flat-button color="accent" (click)="openAdd()">
+        <mat-icon>add</mat-icon>
+        {{ 'common.add' | transloco }}
+      </button>
+    </div>
+  </mat-toolbar>
+
+  <table mat-table [dataSource]="dataSource">
+    @foreach(var prop in ItemPropertyInfos) {
+      var propCamel = prop.Name.ToCamelCase();
+    <ng-container matColumnDef="@propCamel">
+      <th mat-header-cell *matHeaderCellDef>{{ '@(modelNameCamel).@(propCamel)' | transloco }}</th>
+      <td mat-cell *matCellDef="let element"> {{ element.@propCamel }} </td>
+    </ng-container>
+    }
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>{{ 'common.actions' | transloco }}</th>
+      <td mat-cell *matCellDef="let element">
+        <button mat-icon-button color="primary" [routerLink]="['../detail', element.id]" matTooltip="{{ 'common.view' | transloco }}">
+          <mat-icon>visibility</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" (click)="openEdit(element)" matTooltip="{{ 'common.edit' | transloco }}">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="delete(element)" matTooltip="{{ 'common.delete' | transloco }}">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columns"></tr>
+    <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+  </table>
+
+  <mat-paginator [length]="totalCount()" [pageSizeOptions]="[10, 20, 50]" (page)="onPageChange($event)" showFirstLastButtons></mat-paginator>
+</div>

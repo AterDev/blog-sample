@@ -1,0 +1,34 @@
+@{
+    var modelNameCamel = ModelName.ToCamelCase();
+}
+<h2 mat-dialog-title>{{ (isDialog ? 'common.add' : 'menu.@modelNameCamel') | transloco }}</h2>
+<mat-dialog-content>
+  <form class="form-container">
+    @foreach(var prop in AddPropertyInfos) {
+      var propCamel = prop.Name.ToCamelCase();
+      if (prop.Type == "string" || prop.Type == "number") {
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ '@(modelNameCamel).@(propCamel)' | transloco }}</mat-label>
+      <input matInput [field]="form.@propCamel">
+      @if (prop.IsRequired || prop.MinLength.HasValue || prop.MaxLength.HasValue) {
+      <mat-error *ngIf="form.@(propCamel).invalid() && form.@(propCamel).touched()">{{ getValidatorMessage(form.@propCamel) }}</mat-error>
+      }
+    </mat-form-field>
+      } else if (prop.Type == "bool") {
+    <div class="full-width margin-bottom">
+       <mat-checkbox [field]="form.@propCamel">{{ '@(modelNameCamel).@(propCamel)' | transloco }}</mat-checkbox>
+    </div>
+      } else if (prop.IsEnum) {
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ '@(modelNameCamel).@(propCamel)' | transloco }}</mat-label>
+      <mat-select [field]="form.@propCamel">
+      </mat-select>
+    </mat-form-field>
+      }
+    }
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="isDialog ? dialogRef.close() : router.navigate(['../list'])">{{ 'common.cancel' | transloco }}</button>
+  <button mat-flat-button color="primary" (click)="save()" [disabled]="form().invalid()">{{ 'common.confirm' | transloco }}</button>
+</mat-dialog-actions>

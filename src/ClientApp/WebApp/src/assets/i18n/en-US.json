@@ -42,40 +42,6 @@
     "emailPlaceholder": "Please enter a valid email address",
     "passwordPlaceholder": "Password (6+ chars)"
   },
-  "systemLogs": {
-    "actionUserName": "Operator Name",
-    "targetName": "Target Name",
-    "actionType": "Action Type",
-    "startDate": "Start Date",
-    "endDate": "End Date"
-  },
-  "systemRole": {
-    "name": "Role Display Name",
-    "nameValue": "Role Name (System ID)",
-    "isSystem": "Is System Built-in",
-    "isSystemDesc": "Is System Built-in (Cannot be deleted)",
-    "menuPermission": "Menu Permissions",
-    "menuPermissionConfig": "Menu Permission Configuration"
-  },
-  "systemUser": {
-    "roleId": "Role ID",
-    "none": "None",
-    "realName": "Real Name",
-    "email": "Email",
-    "lastLoginTime": "Last Login Time",
-    "gender": "Gender",
-    "role": "Role",
-    "phoneNumber": "Phone Number",
-    "avatar": "Avatar URL",
-    "select": "Please select",
-    "emailConfirmed": "Email Confirmed",
-    "phoneNumberConfirmed": "Phone Number Confirmed",
-    "twoFactorEnabled": "Two Factor Enabled",
-    "lockoutEnd": "Lockout End",
-    "lockoutEnabled": "Lockout Enabled",
-    "accessFailedCount": "Access Failed Count",
-    "retryCount": "Retry Count"
-  },
   "language": "Language",
   "validation": {
     "required": "This field is required",
@@ -84,15 +50,14 @@
     "email": "Please enter a valid email address"
   },
   "menu": {
-    "business": "Business",
-    "customer": "Customer",
-    "team": "Team",
-    "product": "Product",
-    "order": "Order",
-    "system": "System",
-    "systemRole": "Role",
-    "systemUser": "Account",
-    "systemLogs": "Logs",
-    "systemConfig": "Settings"
+    "user": "User",
+    "userDetail": "User Detail",
+    "changePassword": "Change Password",
+    "blog": "Blog",
+    "blogList": "Blog List",
+    "blogDetail": "Blog Detail",
+    "blogAdd": "Add Blog",
+    "blogEdit": "Edit Blog",
+    "blogCategory": "Category"
   }
 }

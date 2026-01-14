@@ -63,11 +63,10 @@ var adminService = builder.AddProject<Projects.AdminService>("AdminService")
     .WithParentRelationship(serviceGroup);
 
 // run frontend app, you should install npm packages first
-//var webApp = builder.AddJavaScriptApp("frontend", "../ClientApp/WebApp")
-//    .WithPnpm()
-//    .WithUrl("http://localhost:4200")
-//    .WaitFor(adminService)
-//    .WithParentRelationship(serviceGroup);
+var webApp = builder.AddJavaScriptApp("frontend", "../ClientApp/WebApp", "start")
+   .WithPnpm()
+   .WithUrl("http://localhost:4200")
+   .WithParentRelationship(serviceGroup);
 
 if (database != null)
 {
