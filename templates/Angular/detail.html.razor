@@ -1,21 +1,21 @@
+@* Detail page template (single-file placement) *@
 @{
-    var modelNameCamel = ModelName.ToCamelCase();
+    var name = ModelName ?? "Model";
 }
-<h2 mat-dialog-title>{{ (isDialog ? 'common.view' : 'menu.@modelNameCamel') | transloco }}</h2>
-<mat-dialog-content>
-  <mat-list *ngIf="data()">
-    @foreach(var prop in DetailPropertyInfos) {
-      var propCamel = prop.Name.ToCamelCase();
-    <mat-list-item>
-      <span matListItemTitle>{{ '@(modelNameCamel).@(propCamel)' | transloco }}</span>
-      <span matListItemLine>{{ data()?.@propCamel }}</span>
-    </mat-list-item>
+<div class="detail-view" style="padding:16px;">
+
+  <mat-list>
+    @foreach (var p in DetailPropertyInfos)
+    {
+      <mat-list-item>
+        <strong style="width:160px;display:inline-block;">@(p.CommentSummary ?? p.Name):</strong>
+        <span>{{ model.@(p.Name.ToCamelCase()) }}</span>
+      </mat-list-item>
     }
   </mat-list>
-</mat-dialog-content>
-<mat-dialog-actions align="end">
-  <button mat-button (click)="back()">
-    <mat-icon>arrow_back</mat-icon>
-    {{ 'common.cancel' | transloco }}
-  </button>
-</mat-dialog-actions>
+
+  <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+    <button mat-button (click)="close()">{{ i18nKeys.common.close | translate }}</button>
+  </div>
+
+</div>

@@ -1,0 +1,26 @@
+<div class="detail-view" style="padding:16px;">
+
+  <mat-list>
+    <mat-list-item>
+      <strong style="width:160px;display:inline-block;">标题:</strong>
+      <span>{{ model.title }}</span>
+    </mat-list-item>
+    <mat-list-item>
+      <strong style="width:160px;display:inline-block;">内容:</strong>
+      <span style="white-space:pre-wrap">{{ model.content }}</span>
+    </mat-list-item>
+    <mat-list-item>
+      <strong style="width:160px;display:inline-block;">作者ID:</strong>
+      <span>{{ model.authorId }}</span>
+    </mat-list-item>
+    <mat-list-item>
+      <strong style="width:160px;display:inline-block;">创建时间:</strong>
+      <span>{{ model.createdTime | date:'short' }}</span>
+    </mat-list-item>
+  </mat-list>
+
+  <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+    <button mat-button (click)="close()">{{ i18nKeys.common.close | translate }}</button>
+  </div>
+
+</div>

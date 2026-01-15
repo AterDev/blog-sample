@@ -1,0 +1,35 @@
+
+<div class="detail-view" style="padding:16px;">
+
+  <mat-list>
+      <mat-list-item>
+        <strong style="width:160px;display:inline-block;">分类名称:</strong>
+        <span>{{ model.name }}</span>
+      </mat-list-item>
+      <mat-list-item>
+        <strong style="width:160px;display:inline-block;">描述:</strong>
+        <span>{{ model.description }}</span>
+      </mat-list-item>
+      <mat-list-item>
+        <strong style="width:160px;display:inline-block;">Id:</strong>
+        <span>{{ model.id }}</span>
+      </mat-list-item>
+      <mat-list-item>
+        <strong style="width:160px;display:inline-block;">CreatedTime:</strong>
+        <span>{{ model.createdTime }}</span>
+      </mat-list-item>
+      <mat-list-item>
+        <strong style="width:160px;display:inline-block;">UpdatedTime:</strong>
+        <span>{{ model.updatedTime }}</span>
+      </mat-list-item>
+      <mat-list-item>
+        <strong style="width:160px;display:inline-block;">TenantId:</strong>
+        <span>{{ model.tenantId }}</span>
+      </mat-list-item>
+  </mat-list>
+
+  <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+    <button mat-button (click)="close()">{{ i18nKeys.common.close | translate }}</button>
+  </div>
+
+</div>

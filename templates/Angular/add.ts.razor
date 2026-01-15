@@ -1,81 +1,56 @@
+@* Add component TypeScript (with imports and stable formatting) *@
 @{
-    var modelNameCamel = ModelName.ToCamelCase();
-    var modelNameHyphen = ModelName.ToHyphen();
+    var name = ModelName ?? "Model";
+    var camel = (ModelName ?? "Model").ToCamelCase();
+    var module = (Namespace ?? string.Empty).Split('.').LastOrDefault()?.ToHyphen() ?? string.Empty;
+  var hasEnumAdd = AddPropertyInfos.Any(p => p.IsEnum);
+  var enumImports = hasEnumAdd ? ", ToKeyValuePipe, EnumTextPipe" : string.Empty;
 }
-import { Component, Inject, OnInit, Optional, signal, inject } from '@@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@@angular/material/dialog';
-import { MatFormFieldModule } from '@@angular/material/form-field';
-import { MatInputModule } from '@@angular/material/input';
-import { MatButtonModule } from '@@angular/material/button';
-import { MatSelectModule } from '@@angular/material/select';
+import { Component } from '@@angular/core';
+import { AbstractControl, FormBuilder, FormGroup, Validators } from '@@angular/forms';
+import { MatDialogRef } from '@@angular/material/dialog';
 import { MatCheckboxModule } from '@@angular/material/checkbox';
-import { AdminClient } from 'src/app/services/admin-client.service';
-import { @(ModelName)AddDto } from 'src/app/services/admin-client.service';
-import { Router } from '@@angular/router';
-import { TranslocoModule } from '@@jsverse/transloco';
-import { CommonModule } from '@@angular/common';
-import { form, Field, required, minLength, maxLength, FieldState } from '@@angular/forms/signals';
-import { translateValidationError } from 'src/app/share/validation-helpers';
 import { TranslateService } from '@@ngx-translate/core';
+import { AdminClient } from 'src/app/services/admin/admin-client';
+import { I18N_KEYS } from 'src/app/share/i18n-keys';
+import { CommonFormModules } from 'src/app/share/shared-modules';
+@{ if (hasEnumAdd) { WriteLiteral("import { ToKeyValuePipe } from 'src/app/share/pipe/to-key-value.pipe';\n"); WriteLiteral("import { EnumTextPipe } from 'src/app/pipe/admin/enum-text.pipe';\n"); } }
+import { @(ModelName)AddDto } from 'src/app/services/admin/models/@(module)/@(ModelName.ToHyphen())-add-dto.model';
 
-@@Component({
-  selector: 'app-@(modelNameHyphen)-add',
-  templateUrl: './add.html',
-  standalone: true,
-  imports: [
-    CommonModule, MatFormFieldModule, MatInputModule, 
-    MatButtonModule, MatSelectModule, MatCheckboxModule, MatDialogModule, 
-    TranslocoModule, Field
-  ]
-})
-export class AddComponent implements OnInit {
-  isDialog = false;
-  private translate = inject(TranslateService);
+@{ WriteLiteral("@Component({\n  selector: 'app-" + camel + "-add',\n  imports: [CommonFormModules, MatCheckboxModule" + enumImports + "],\n  templateUrl: './add.html'\n})\n"); }
+export class @(ModelName)Add {
 
-  model = signal<@(ModelName)AddDto>({
-    @foreach(var prop in AddPropertyInfos) {
-      <text>@prop.Name.ToCamelCase(): @(prop.Type == "bool" ? "false" : "null") as any,
-      </text>
-    }
-  } as @(ModelName)AddDto);
+  i18nKeys = I18N_KEYS;
 
-  form = form(this.model, (schema) => {
-    @foreach(var prop in AddPropertyInfos) {
-      if (prop.IsRequired) {<text>required(schema.@prop.Name.ToCamelCase());
-    </text>}
-      if (prop.MinLength.HasValue) {<text>minLength(schema.@prop.Name.ToCamelCase(), @prop.MinLength.Value);
-    </text>}
-      if (prop.MaxLength.HasValue) {<text>maxLength(schema.@prop.Name.ToCamelCase(), @prop.MaxLength.Value);
-    </text>}
-    }
-  });
+  form!: FormGroup;
 
   constructor(
+    private fb: FormBuilder,
     private adminClient: AdminClient,
-    private router: Router,
-    @@Optional() public dialogRef: MatDialogRef<AddComponent>,
-    @@Optional() @@Inject(MAT_DIALOG_DATA) public data: any
+    private dialogRef: MatDialogRef<@(ModelName)Add>,
+    private translate: TranslateService
   ) {
-    this.isDialog = !!this.dialogRef;
+    this.buildForm();
   }
 
-  ngOnInit(): void {}
-
-  getValidatorMessage(field: FieldState<any, any>): string {
-    const errors = field.errors();
-    if (!errors || errors.length === 0) return '';
-    return translateValidationError(this.translate, errors[0]);
-  }
-
-  save() {
-    if (this.form().invalid()) return;
-    const dto = this.form().value();
-    this.adminClient.@(modelNameCamel).add(dto).subscribe(res => {
-      if (this.isDialog) {
-        this.dialogRef.close(true);
-      } else {
-        this.router.navigate(['../list']);
-      }
+  buildForm() {
+    this.form = this.fb.group({
+      @( string.Join(",\n      ", AddPropertyInfos.Select(p => "\"" + p.Name.ToCamelCase() + "\": [null, [" + (p.IsRequired ? "Validators.required" : "") + (p.MinLength.HasValue ? ((p.IsRequired ? ", " : "") + "Validators.minLength(" + p.MinLength + ")") : "") + (p.MaxLength.HasValue ? ((p.IsRequired || p.MinLength.HasValue) ? ", " : "") + "Validators.maxLength(" + p.MaxLength + ")" : "") + "]]")) )
     });
   }
+
+  getValidatorMessage(control: AbstractControl | null): string {
+    if (!control || !control.errors) { return ''; }
+    const errors = control.errors;
+    const key = Object.keys(errors)[0];
+    const params = errors[key];
+    return this.translate.instant(`validation.${key.toLowerCase()}`, params);
+  }
+
+  submit() {
+    if (this.form.invalid) return;
+    this.adminClient.@(camel).add(this.form.value as @(ModelName)AddDto).subscribe(() => this.dialogRef.close(true));
+  }
+
+  close(result: boolean) { this.dialogRef.close(result); }
 }

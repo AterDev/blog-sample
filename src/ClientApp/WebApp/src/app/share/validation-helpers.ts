@@ -31,3 +31,4 @@ export function translateValidationError(
   const params = mapValidationParams(error);
   return error.message ?? translate.instant(key, params);
 }
+

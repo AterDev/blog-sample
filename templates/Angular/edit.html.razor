@@ -1,34 +1,57 @@
+@* Edit page template (single-file placement) *@
 @{
-    var modelNameCamel = ModelName.ToCamelCase();
+    var name = ModelName ?? "Model";
 }
-<h2 mat-dialog-title>{{ (isDialog ? 'common.edit' : 'menu.@modelNameCamel') | transloco }}</h2>
-<mat-dialog-content>
-  <form class="form-container">
-    @foreach(var prop in UpdatePropertyInfos) {
-      var propCamel = prop.Name.ToCamelCase();
-      if (prop.Type == "string" || prop.Type == "number") {
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>{{ '@(modelNameCamel).@(propCamel)' | transloco }}</mat-label>
-      <input matInput [field]="form.@propCamel">
-      @if (prop.IsRequired || prop.MinLength.HasValue || prop.MaxLength.HasValue) {
-      <mat-error *ngIf="form.@(propCamel).invalid() && form.@(propCamel).touched()">{{ getValidatorMessage(form.@propCamel) }}</mat-error>
-      }
-    </mat-form-field>
-      } else if (prop.Type == "bool") {
-    <div class="full-width margin-bottom">
-       <mat-checkbox [field]="form.@propCamel">{{ '@(modelNameCamel).@(propCamel)' | transloco }}</mat-checkbox>
-    </div>
-      } else if (prop.IsEnum) {
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>{{ '@(modelNameCamel).@(propCamel)' | transloco }}</mat-label>
-      <mat-select [field]="form.@propCamel">
-      </mat-select>
-    </mat-form-field>
-      }
+<form [formGroup]="form" (ngSubmit)="submit()" class="edit-form" style="display:flex;flex-direction:column;gap:16px;">
+
+  @foreach (var p in UpdatePropertyInfos)
+  {
+    if (p.IsEnum)
+    {
+      <mat-form-field appearance="outline">
+        <mat-label>@(p.CommentSummary ?? p.Name)</mat-label>
+        <mat-select formControlName="@(p.Name.ToCamelCase())">
+          <mat-option *ngFor="let opt of @(p.Type) | toKeyValue" [value]="opt.value">{{ opt.value | enumText:'@(p.Type)' }}</mat-option>
+        </mat-select>
+        <mat-error *ngIf="form.get('@(p.Name.ToCamelCase())')?.invalid && form.get('@(p.Name.ToCamelCase())')?.touched">{{ getValidatorMessage(form.get('@(p.Name.ToCamelCase())')) }}</mat-error>
+      </mat-form-field>
     }
-  </form>
-</mat-dialog-content>
-<mat-dialog-actions align="end">
-  <button mat-button (click)="isDialog ? dialogRef.close() : router.navigate(['../../list'])">{{ 'common.cancel' | transloco }}</button>
-  <button mat-flat-button color="primary" (click)="save()" [disabled]="form().invalid()">{{ 'common.confirm' | transloco }}</button>
-</mat-dialog-actions>
+    else if (p.Type != null && p.Type.ToLower().Contains("bool"))
+    {
+      <mat-checkbox formControlName="@(p.Name.ToCamelCase())">@(p.CommentSummary ?? p.Name)</mat-checkbox>
+      <div *ngIf="form.get('@(p.Name.ToCamelCase())')?.invalid && form.get('@(p.Name.ToCamelCase())')?.touched"><mat-error>{{ getValidatorMessage(form.get('@(p.Name.ToCamelCase())')) }}</mat-error></div>
+    }
+    else if (p.Type != null && p.Type.ToLower().Contains("date"))
+    {
+      <mat-form-field appearance="outline">
+        <mat-label>@(p.CommentSummary ?? p.Name)</mat-label>
+        <input matInput [matDatepicker]="@(p.Name.ToCamelCase())Picker" formControlName="@(p.Name.ToCamelCase())" />
+        <mat-datepicker-toggle matSuffix [for]="@(p.Name.ToCamelCase())Picker"></mat-datepicker-toggle>
+        <mat-datepicker #@(p.Name.ToCamelCase())Picker></mat-datepicker>
+        <mat-error *ngIf="form.get('@(p.Name.ToCamelCase())')?.invalid && form.get('@(p.Name.ToCamelCase())')?.touched">{{ getValidatorMessage(form.get('@(p.Name.ToCamelCase())')) }}</mat-error>
+      </mat-form-field>
+    }
+    else if (p.MaxLength.HasValue && p.MaxLength > 200)
+    {
+      <mat-form-field appearance="outline">
+        <mat-label>@(p.CommentSummary ?? p.Name)</mat-label>
+        <textarea matInput rows="4" formControlName="@(p.Name.ToCamelCase())"></textarea>
+        <mat-error *ngIf="form.get('@(p.Name.ToCamelCase())')?.invalid && form.get('@(p.Name.ToCamelCase())')?.touched">{{ getValidatorMessage(form.get('@(p.Name.ToCamelCase())')) }}</mat-error>
+      </mat-form-field>
+    }
+    else
+    {
+      <mat-form-field appearance="outline">
+        <mat-label>@(p.CommentSummary ?? p.Name)</mat-label>
+        <input matInput type="@(p.IsDecimal ? "number" : "text")" formControlName="@(p.Name.ToCamelCase())" />
+        <mat-error *ngIf="form.get('@(p.Name.ToCamelCase())')?.invalid && form.get('@(p.Name.ToCamelCase())')?.touched">{{ getValidatorMessage(form.get('@(p.Name.ToCamelCase())')) }}</mat-error>
+      </mat-form-field>
+    }
+  }
+
+  <div style="display:flex;gap:8px;justify-content:flex-end;">
+    <button mat-button type="button" (click)="close(false)">{{ i18nKeys.common.cancel | translate }}</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid">{{ i18nKeys.common.save | translate }}</button>
+  </div>
+
+</form>

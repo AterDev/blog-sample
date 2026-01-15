@@ -1,101 +1,139 @@
+@* TypeScript for list page (keeps imports and formatting) *@
 @{
-    var modelNameCamel = ModelName.ToCamelCase();
-    var modelNameHyphen = ModelName.ToHyphen();
+  var name = ModelName ?? "Model";
+  var camel = (ModelName ?? "Model").ToCamelCase();
+  var module = (Namespace ?? string.Empty).Split('.').LastOrDefault()?.ToHyphen() ?? string.Empty;
+  var hasEnumFilter = FilterPropertyInfos.Any(p => p.IsEnum);
+  var hasIdFilter = FilterPropertyInfos.Any(p => p.Type != null && p.Type.ToLower().Contains("guid"));
+  var idFilterFields = FilterPropertyInfos.Where(p => p.Type != null && p.Type.ToLower().Contains("guid")).ToList();
+  var enumImports = hasEnumFilter ? ", ToKeyValuePipe, EnumTextPipe" : string.Empty;
 }
-import { Component, OnInit, ViewChild, signal } from '@@angular/core';
-import { MatPaginator, PageEvent, MatPaginatorModule } from '@@angular/material/paginator';
-import { MatTableDataSource, MatTableModule } from '@@angular/material/table';
-import { MatDialog, MatDialogModule } from '@@angular/material/dialog';
-import { MatToolbarModule } from '@@angular/material/toolbar';
-import { MatButtonModule } from '@@angular/material/button';
-import { MatIconModule } from '@@angular/material/icon';
-import { MatInputModule } from '@@angular/material/input';
-import { MatFormFieldModule } from '@@angular/material/form-field';
-import { MatSelectModule } from '@@angular/material/select';
-import { MatSlideToggleModule } from '@@angular/material/slide-toggle';
-import { FormsModule } from '@@angular/forms';
-import { RouterLink, ActivatedRoute } from '@@angular/router';
-import { TranslocoModule } from '@@jsverse/transloco';
-
-import { AdminClient } from 'src/app/services/admin-client.service';
-import { @(ModelName)FilterDto, @(ModelName)ItemDto } from 'src/app/services/admin-client.service';
+import { Component, OnInit } from '@@angular/core';
+import { MatDialog } from '@@angular/material/dialog';
+import { MatTableDataSource } from '@@angular/material/table';
+import { TranslateService } from '@@ngx-translate/core';
+import { AdminClient } from 'src/app/services/admin/admin-client';
+import { I18N_KEYS } from 'src/app/share/i18n-keys';
+import { CommonFormModules, CommonListModules } from 'src/app/share/shared-modules';
+@{ if (hasEnumFilter) { WriteLiteral("import { ToKeyValuePipe } from 'src/app/share/pipe/to-key-value.pipe';\n"); WriteLiteral("import { EnumTextPipe } from 'src/app/pipe/admin/enum-text.pipe';\n"); } }
+@{ if (hasIdFilter) { WriteLiteral("import { forkJoin, Observable } from 'rxjs';\n"); WriteLiteral("import { PageList } from 'src/app/services/admin/models/perigon/page-list.model';\n"); } }
+@{ 
+  foreach (var field in idFilterFields) 
+  { 
+    var navigationName = field.NavigationName ?? field.Name.Replace("Id", "");
+    var pascalNavigationName = navigationName.Substring(0, 1).ToUpper() + navigationName.Substring(1);
+    var itemDtoType = pascalNavigationName + "ItemDto";
+    var moduleName = (Namespace ?? string.Empty).Split('.').FirstOrDefault()?.ToLower() ?? string.Empty;
+    WriteLiteral($"import {{ {itemDtoType} }} from 'src/app/services/admin/models/{moduleName}-mod/{navigationName.ToHyphen()}-item-dto.model';\n");
+  }
+}
 import { ConfirmDialogComponent } from 'src/app/share/components/confirm-dialog/confirm-dialog.component';
-import { AddComponent } from './add/add.component';
-import { EditComponent } from './edit/edit.component';
-import { form, Field } from '@@angular/forms/signals';
+import { @(ModelName)FilterDto } from 'src/app/services/admin/models/@(module)/@(ModelName.ToHyphen())-filter-dto.model';
+import { @(ModelName)ItemDto } from 'src/app/services/admin/models/@(module)/@(ModelName.ToHyphen())-item-dto.model';
+import { @(ModelName)Add } from './add';
+import { @(ModelName)Edit } from './edit';
+import { @(ModelName)Detail } from './detail';
 
-@@Component({
-  selector: 'app-@(modelNameHyphen)-index',
-  templateUrl: './index.html',
-  standalone: true,
-  imports: [
-    MatTableModule, MatPaginatorModule, MatToolbarModule, MatButtonModule, 
-    MatIconModule, MatInputModule, MatFormFieldModule, MatSelectModule, MatSlideToggleModule,
-    FormsModule, RouterLink, TranslocoModule, MatDialogModule, Field
-  ]
-})
-export class IndexComponent implements OnInit {
-  @@ViewChild(MatPaginator) paginator!: MatPaginator;
-  
-  filterModel = signal<@(ModelName)FilterDto>({
-    pageIndex: 1,
-    pageSize: 10
-  });
+@{ WriteLiteral("@Component({\n  selector: 'app-" + camel + "-index',\n  imports: [CommonListModules, CommonFormModules" + enumImports + "],\n  templateUrl: './index.html'\n})\n"); }
+export class @(ModelName)Index implements OnInit {
 
-  filterForm = form(this.filterModel);
+  i18nKeys = I18N_KEYS;
 
-  dataSource = new MatTableDataSource<@(ModelName)ItemDto>([]);
-  totalCount = signal(0);
-  columns = [@foreach(var prop in ItemPropertyInfos){<text>'@prop.Name.ToCamelCase()', </text>}'actions'];
+  filter: @(ModelName)FilterDto = { pageIndex: 1, pageSize: 10 };
+  dataSource = new MatTableDataSource<@(ModelName)ItemDto>();
+  displayedColumns = [ @( string.Join(", ", ItemPropertyInfos.Select(c => $"\"{c.Name}\"")) ), "actions" ];
+
+  total = 0;
+  pageSize = 10;
+@{ 
+  foreach (var field in idFilterFields) 
+  { 
+    var navigationName = field.NavigationName ?? field.Name.Replace("Id", "");
+    var pascalNavigationName = navigationName.Substring(0, 1).ToUpper() + navigationName.Substring(1);
+    var itemDtoType = pascalNavigationName + "ItemDto";
+    WriteLiteral($"  {field.Name.ToCamelCase()}Options: {itemDtoType}[] = [];\n");
+  } 
+}
 
   constructor(
-    private adminClient: AdminClient, 
+    private adminClient: AdminClient,
     private dialog: MatDialog,
-    private route: ActivatedRoute
-  ) {}
+    private translate: TranslateService
+  ) { }
 
   ngOnInit(): void {
-    this.getList();
+@{ 
+  if (idFilterFields.Count > 0) 
+  { 
+    WriteLiteral("    const requests: Observable<PageList<any>>[] = [];\n");
+    foreach (var field in idFilterFields)
+    {
+      var camelField = field.Name.ToCamelCase();
+      WriteLiteral($"    requests.push(this.get{field.Name}());\n");
+    }
+    WriteLiteral("    forkJoin(requests).subscribe({\n");
+    WriteLiteral("      next: (results) => {\n");
+    for (int i = 0; i < idFilterFields.Count; i++)
+    {
+      var camelField = idFilterFields[i].Name.ToCamelCase();
+      WriteLiteral($"        this.{camelField}Options = results[{i}].data || [];\n");
+    }
+    WriteLiteral("      }\n");
+    WriteLiteral("    });\n");
+  }
+}
+    this.filter();
   }
 
-  getList() {
-    this.adminClient.@(modelNameCamel).filter(this.filterModel()).subscribe(res => {
-      if (res.data) {
-        this.dataSource.data = res.data;
-        this.totalCount.set(res.totalCount);
-      }
+@{
+  foreach (var field in idFilterFields)
+  {
+    var navigationName = field.NavigationName ?? field.Name.Replace("Id", "");
+    var pascalNavigationName = navigationName.Substring(0, 1).ToUpper() + navigationName.Substring(1);
+    var camelField = field.Name.ToCamelCase();
+    var itemDtoType = pascalNavigationName + "ItemDto";
+    WriteLiteral($"  get{field.Name}(): Observable<PageList<{itemDtoType}>> {{\n");
+    WriteLiteral($"    return this.adminClient.{pascalNavigationName.ToCamelCase()}.list({{ pageIndex: 1, pageSize: 100 }});\n");
+    WriteLiteral("  }\n\n");
+  }
+}
+
+  filter(): void {
+    this.adminClient.@(camel).list(this.filter).subscribe((res) => {
+      this.dataSource.data = (res.data || []);
+      this.total = (res.count ?? res.data?.length ?? this.dataSource.data.length);
     });
   }
 
-  onPageChange(event: PageEvent) {
-    this.filterModel.update(f => ({ ...f, pageIndex: event.pageIndex + 1, pageSize: event.pageSize }));
-    this.getList();
+  pageChanged(e: any) {
+    this.filter.pageIndex = e.pageIndex + 1;
+    this.filter.pageSize = e.pageSize;
+    this.filter();
   }
 
   openAdd() {
-    const ref = this.dialog.open(AddComponent, { width: '800px' });
-    ref.afterClosed().subscribe(res => {
-      if (res) this.getList();
-    });
+    const ref = this.dialog.open(@(ModelName)Add, { width: '800px' });
+    ref.afterClosed().subscribe((r: boolean) => { if (r) this.filter(); });
   }
 
-  openEdit(item: @(ModelName)ItemDto) {
-    const ref = this.dialog.open(EditComponent, { width: '800px', data: item });
-    ref.afterClosed().subscribe(res => {
-      if (res) this.getList();
-    });
+  openEdit(id: string) {
+    const ref = this.dialog.open(@(ModelName)Edit, { width: '800px', data: { id } });
+    ref.afterClosed().subscribe((r: boolean) => { if (r) this.filter(); });
   }
 
-  delete(item: @(ModelName)ItemDto) {
+  openDetail(id: string) {
+    this.dialog.open(@(ModelName)Detail, { width: '800px', data: { id } });
+  }
+
+  deleteItem(id: string) {
     const ref = this.dialog.open(ConfirmDialogComponent, {
-      data: { title: 'confirmDelete', content: 'confirmDelete' }
-    });
-    ref.afterClosed().subscribe(res => {
-      if (res) {
-        this.adminClient.@(modelNameCamel).delete(item.id).subscribe(() => {
-          this.getList();
-        });
+      data: {
+        title: this.translate.instant('common.confirm'),
+        content: this.translate.instant('common.deleteConfirm')
       }
+    });
+    ref.afterClosed().subscribe((ok: boolean) => {
+      if (ok) { this.adminClient.@(camel).delete(id).subscribe(() => this.filter()); }
     });
   }
 }

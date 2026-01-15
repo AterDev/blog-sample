@@ -4,6 +4,14 @@ import { LayoutComponent } from './layout/layout';
 import { Notfound } from './pages/notfound/notfound';
 import { AuthGuard } from './share/auth.guard';
 import { Index } from './pages/index';
+import { BlogCategoryIndex } from './pages/blog-category/index';
+import { BlogCategoryAdd } from './pages/blog-category/add';
+import { BlogCategoryEdit } from './pages/blog-category/edit';
+import { BlogCategoryDetail } from './pages/blog-category/detail';
+import { BlogIndex } from './pages/blog/index';
+import { BlogAdd } from './pages/blog/add';
+import { BlogEdit } from './pages/blog/edit';
+import { BlogDetail } from './pages/blog/detail';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -14,15 +22,15 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     canActivateChild: [AuthGuard],
     children: [
+      { path: 'blog', component: BlogIndex },
+      { path: 'blog/add', component: BlogAdd },
+      { path: 'blog/edit/:id', component: BlogEdit },
+      { path: 'blog/detail/:id', component: BlogDetail },
 
-
-      // {
-      //   path: 'system-config',
-      //   children: [
-      //     { path: '', redirectTo: '/system-config/index', pathMatch: 'full' },
-      //     { path: 'index', loadComponent: () => import('./pages/system-config/index/index').then(m => m.Index) },
-      //   ]
-      // },
+      { path: 'blogcategory', component: BlogCategoryIndex },
+      { path: 'blogcategory/add', component: BlogCategoryAdd },
+      { path: 'blogcategory/edit/:id', component: BlogCategoryEdit },
+      { path: 'blogcategory/detail/:id', component: BlogCategoryDetail },
     ],
   },
   

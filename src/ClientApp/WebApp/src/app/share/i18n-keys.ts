@@ -45,40 +45,6 @@ export const I18N_KEYS = {
     "emailPlaceholder": "login.emailPlaceholder",
     "passwordPlaceholder": "login.passwordPlaceholder"
   },
-  "systemLogs": {
-    "actionUserName": "systemLogs.actionUserName",
-    "targetName": "systemLogs.targetName",
-    "actionType": "systemLogs.actionType",
-    "startDate": "systemLogs.startDate",
-    "endDate": "systemLogs.endDate"
-  },
-  "systemRole": {
-    "name": "systemRole.name",
-    "nameValue": "systemRole.nameValue",
-    "isSystem": "systemRole.isSystem",
-    "isSystemDesc": "systemRole.isSystemDesc",
-    "menuPermission": "systemRole.menuPermission",
-    "menuPermissionConfig": "systemRole.menuPermissionConfig"
-  },
-  "systemUser": {
-    "roleId": "systemUser.roleId",
-    "none": "systemUser.none",
-    "realName": "systemUser.realName",
-    "email": "systemUser.email",
-    "lastLoginTime": "systemUser.lastLoginTime",
-    "gender": "systemUser.gender",
-    "role": "systemUser.role",
-    "phoneNumber": "systemUser.phoneNumber",
-    "avatar": "systemUser.avatar",
-    "select": "systemUser.select",
-    "emailConfirmed": "systemUser.emailConfirmed",
-    "phoneNumberConfirmed": "systemUser.phoneNumberConfirmed",
-    "twoFactorEnabled": "systemUser.twoFactorEnabled",
-    "lockoutEnd": "systemUser.lockoutEnd",
-    "lockoutEnabled": "systemUser.lockoutEnabled",
-    "accessFailedCount": "systemUser.accessFailedCount",
-    "retryCount": "systemUser.retryCount"
-  },
   "language": "language",
   "validation": {
     "required": "validation.required",
@@ -87,15 +53,14 @@ export const I18N_KEYS = {
     "email": "validation.email"
   },
   "menu": {
-    "business": "menu.business",
-    "customer": "menu.customer",
-    "team": "menu.team",
-    "product": "menu.product",
-    "order": "menu.order",
-    "system": "menu.system",
-    "systemRole": "menu.systemRole",
-    "systemUser": "menu.systemUser",
-    "systemLogs": "menu.systemLogs",
-    "systemConfig": "menu.systemConfig"
+    "user": "menu.user",
+    "userDetail": "menu.userDetail",
+    "changePassword": "menu.changePassword",
+    "blog": "menu.blog",
+    "blogList": "menu.blogList",
+    "blogDetail": "menu.blogDetail",
+    "blogAdd": "menu.blogAdd",
+    "blogEdit": "menu.blogEdit",
+    "blogCategory": "menu.blogCategory"
   }
 };
