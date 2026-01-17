@@ -4,21 +4,23 @@
     var camel = (ModelName ?? "Model").ToCamelCase();
     var module = (Namespace ?? string.Empty).Split('.').LastOrDefault()?.ToHyphen() ?? string.Empty;
 }
-import { Component, Inject, OnInit } from '@@angular/core';
+import { Component, Inject, OnInit, signal } from '@@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@@angular/material/dialog';
 import { MatListModule } from '@@angular/material/list';
+import { MatCard, MatCardHeader, MatCardTitle, MatCardContent, MatCardActions } from '@@angular/material/card';
 import { AdminClient } from 'src/app/services/admin/admin-client';
 import { I18N_KEYS } from 'src/app/share/i18n-keys';
 import { BaseMatModules } from 'src/app/share/shared-modules';
 import { @(ModelName)DetailDto } from 'src/app/services/admin/models/@(module)/@(ModelName.ToHyphen())-detail-dto.model';
 
-@{ WriteLiteral("@Component({\n  selector: 'app-" + camel + "-detail',\n  imports: [BaseMatModules, MatListModule],\n  templateUrl: './detail.html'\n})\n"); }
+@{ WriteLiteral("@Component({\n  selector: 'app-" + camel + "-detail',\n  imports: [BaseMatModules, MatListModule, MatCard, MatCardHeader, MatCardTitle, MatCardContent, MatCardActions],\n  templateUrl: './detail.html'\n})\n"); }
 export class @(ModelName)Detail implements OnInit {
 
   i18nKeys = I18N_KEYS;
 
   model!: @(ModelName)DetailDto;
   id?: string;
+  isLoading = signal(true);
 
   constructor(
     private adminClient: AdminClient,
@@ -30,7 +32,10 @@ export class @(ModelName)Detail implements OnInit {
 
   ngOnInit() {
     if (this.id) {
-      this.adminClient.@(camel).detail(this.id).subscribe((res: @(ModelName)DetailDto) => this.model = res);
+      this.adminClient.@(camel).detail(this.id).subscribe((res: @(ModelName)DetailDto) => {
+        this.model = res;
+        this.isLoading.set(false);
+      });
     }
   }
 

@@ -6,6 +6,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { AdminClient } from 'src/app/services/admin/admin-client';
 import { I18N_KEYS } from 'src/app/share/i18n-keys';
 import { CommonFormModules, CommonListModules } from 'src/app/share/shared-modules';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { ConfirmDialogComponent } from 'src/app/share/components/confirm-dialog/confirm-dialog.component';
 import { BlogCategoryFilterDto } from 'src/app/services/admin/models/blog-mod/blog-category-filter-dto.model';
 import { BlogCategoryItemDto } from 'src/app/services/admin/models/blog-mod/blog-category-item-dto.model';
@@ -15,14 +16,14 @@ import { BlogCategoryDetail } from './detail';
 
 @Component({
   selector: 'app-blogCategory-index',
-  imports: [CommonListModules, CommonFormModules],
+  imports: [CommonListModules, CommonFormModules, MatAutocompleteModule],
   templateUrl: './index.html'
 })
 export class BlogCategoryIndex implements OnInit {
 
   i18nKeys = I18N_KEYS;
 
-  filter: BlogCategoryFilterDto = { pageIndex: 1, pageSize: 10 };
+  filterDto: BlogCategoryFilterDto = { pageIndex: 1, pageSize: 10 };
   dataSource = new MatTableDataSource<BlogCategoryItemDto>();
   displayedColumns = [ "Name", "Id", "CreatedTime", "actions" ];
 
@@ -36,34 +37,40 @@ export class BlogCategoryIndex implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.reload();
+    this.loadData();
   }
 
-  reload(): void {
-    this.adminClient.blogCategory.list(this.filter).subscribe((res: any) => {
+
+  loadData(): void {
+    this.adminClient.blogCategory.list(this.filterDto as BlogCategoryFilterDto).subscribe((res) => {
       this.dataSource.data = (res.data || []);
       this.total = (res.count ?? res.data?.length ?? this.dataSource.data.length);
     });
   }
 
+  filter(): void {
+    this.filterDto.pageIndex = 1;
+    this.loadData();
+  }
+
   pageChanged(e: any) {
-    this.filter.pageIndex = e.pageIndex + 1;
-    this.filter.pageSize = e.pageSize;
-    this.reload();
+    this.filterDto.pageIndex = e.pageIndex + 1;
+    this.filterDto.pageSize = e.pageSize;
+    this.loadData();
   }
 
   openAdd() {
     const ref = this.dialog.open(BlogCategoryAdd, { width: '800px' });
-    ref.afterClosed().subscribe((r: boolean) => { if (r) this.reload(); });
+    ref.afterClosed().subscribe((r: boolean) => { if (r) this.loadData(); });
   }
 
   openEdit(id: string) {
     const ref = this.dialog.open(BlogCategoryEdit, { width: '800px', data: { id } });
-    ref.afterClosed().subscribe((r: boolean) => { if (r) this.reload(); });
+    ref.afterClosed().subscribe((r: boolean) => { if (r) this.loadData(); });
   }
 
   openDetail(id: string) {
-    this.dialog.open(BlogCategoryDetail, { width: '800px', data: { id } });
+    this.dialog.open(BlogCategoryDetail, { minWidth: '600px', data: { id } });
   }
 
   deleteItem(id: string) {
@@ -74,7 +81,7 @@ export class BlogCategoryIndex implements OnInit {
       }
     });
     ref.afterClosed().subscribe((ok: boolean) => {
-      if (ok) { this.adminClient.blogCategory.delete(id).subscribe(() => this.reload()); }
+      if (ok) { this.adminClient.blogCategory.delete(id).subscribe(() => this.loadData()); }
     });
   }
 }

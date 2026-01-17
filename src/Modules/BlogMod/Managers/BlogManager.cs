@@ -21,7 +21,6 @@ public class BlogManager(
     /// </summary>
     public async Task<PageList<BlogItemDto>> FilterAsync(BlogFilterDto filter)
     {
-        Queryable = Queryable.WhereNotNull(filter.AuthorId, q => q.AuthorId == filter.AuthorId);
         Queryable = Queryable
         .WhereNotNull(filter.CategoryId, q => q.BlogCategoryRelations.Any(r => r.CategoryId == filter.CategoryId));
         return await PageListAsync<BlogFilterDto, BlogItemDto>(filter);

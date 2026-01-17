@@ -3,11 +3,13 @@
 生成Angular前端页面代码模板内容，使用razor语法和模板引擎，根据提供的实体类型和相关的DTO数据结构生成对应的列表页面，添加页面，编辑页面，详情页面代码。
 
 - 使用最新的angulr material组件库。直接使用组件样式，不需要自定义样式，布局使用`bootstrap-grid`提供的栅格系统。
-- 默认优先使用signal处理响应式数据。
+- 默认优先使用signal处理响应式数据，以及angular20+推荐的写法。
 - 组件名称不需要加Component后缀。
 - 确保模板生成代码是格式化良好的。
 - 特别注意 razor语法中`@`符号的使用，避免和Angular模板语法冲突。
 - 生成后要检查代码的正确性，确保可以直接使用。
+- 生成前端内容时，避免与razor语法冲突，如angular前端模板也会使用`@for/@if`等。
+
 
 导入以下内容以支持多语言，以及请求服务:
 
@@ -34,6 +36,13 @@ import { I18N_KEYS } from 'src/app/share/i18n-keys';
 - 详情使用`UserDetailDto`
 
 DTO的路径根据它的模块和名称组合，路径示例`src/app/services/admin/models/user-mod/user-add-dto.model.ts`。
+
+
+## 生成技巧
+
+- 通过mcp 的 创建razor模板工具，获取razor中可使用变量和上下文信息。
+- 充分利用razor语法带来的csharp逻辑功能，如：变量定义，定义方法然后调用。在复杂的生成逻辑中，可利用csharp方法调用，替代直接在模板中进行复杂的拼接，以及产生的冲突问题。
+
 
 ## 生成内容
 

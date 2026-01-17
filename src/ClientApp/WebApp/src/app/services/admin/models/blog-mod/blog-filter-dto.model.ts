@@ -8,8 +8,6 @@ export interface BlogFilterDto {
   pageSize?: number | null;
   /** orderBy */
   orderBy?: Record<string, boolean> | null;
-  /** 作者ID */
-  authorId?: string | null;
   /** categoryId */
   categoryId?: string | null;
 }

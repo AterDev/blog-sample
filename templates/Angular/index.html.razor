@@ -3,48 +3,73 @@
   var name = ModelName ?? "Model";
   var camel = (ModelName ?? "Model").ToCamelCase();
   var idFilterFields = FilterPropertyInfos.Where(p => p.Type != null && p.Type.ToLower().Contains("guid")).ToList();
+  
+  string RenderFilterField(PropertyInfo f)
+  {
+      var camelFieldName = f.Name.ToCamelCase();
+      var label = f.CommentSummary ?? f.Name;
+      
+      if (f.Type != null && f.Type.ToLower().Contains("string"))
+      {
+          return $"<mat-form-field appearance=\"outline\" subscriptSizing=\"dynamic\">{NewLine}" +
+                 $"      <mat-label>{label}</mat-label>{NewLine}" +
+                 $"      <input matInput [(ngModel)]=\"filterDto.{camelFieldName}\" placeholder=\"{label}\" />{NewLine}" +
+                 $"    </mat-form-field>";
+      }
+      else if (f.IsEnum)
+      {
+          return $"<mat-form-field appearance=\"outline\" subscriptSizing=\"dynamic\">{NewLine}" +
+                 $"      <mat-label>{label}</mat-label>{NewLine}" +
+                 $"      <mat-select [(ngModel)]=\"filterDto.{camelFieldName}\"{(f.IsList ? " multiple" : "")}>{NewLine}" +
+                 $"        @for (opt of {f.Type} | toKeyValue; track opt.value) {{{NewLine}" +
+                 $"          <mat-option [value]=\"opt.value\">{NewLine}" +
+                 $"            {{{{ opt.value | enumText:'{f.Type}' }}}}{NewLine}" +
+                 $"          </mat-option>{NewLine}" +
+                 $"        }}{NewLine}" +
+                 $"      </mat-select>{NewLine}" +
+                 $"    </mat-form-field>";
+      }
+      else if (f.Type != null && f.Type.ToLower().Contains("guid"))
+      {
+          var optionsFieldName = (camelFieldName.EndsWith("s") ? camelFieldName.Substring(0, camelFieldName.Length - 1) : camelFieldName) + "Options";
+          return $"<mat-form-field appearance=\"outline\" subscriptSizing=\"dynamic\">{NewLine}" +
+                 $"      <mat-label>{label}</mat-label>{NewLine}" +
+                 $"      <mat-select [(ngModel)]=\"filterDto.{camelFieldName}\"{(f.IsList ? " multiple" : "")}>{NewLine}" +
+                 $"        @for (opt of {optionsFieldName}; track opt.id) {{{NewLine}" +
+                 $"          <mat-option [value]=\"opt.id\">{NewLine}" +
+                 $"            {{{{ opt.name }}}}{NewLine}" +
+                 $"          </mat-option>{NewLine}" +
+                 $"        }}{NewLine}" +
+                 $"      </mat-select>{NewLine}" +
+                 $"    </mat-form-field>";
+      }
+      else if (f.Type.ToLower().Contains("date"))
+      {
+          return $"<mat-form-field appearance=\"outline\" subscriptSizing=\"dynamic\">{NewLine}" +
+                 $"      <mat-label>{label}</mat-label>{NewLine}" +
+                 $"      <input matInput [matDatepicker]=\"{camelFieldName}Picker\" [(ngModel)]=\"filterDto.{camelFieldName}\" placeholder=\"{label}\" />{NewLine}" +
+                 $"      <mat-datepicker-toggle matSuffix [for]=\"{camelFieldName}Picker\"></mat-datepicker-toggle>{NewLine}" +
+                 $"      <mat-datepicker #{camelFieldName}Picker></mat-datepicker>{NewLine}" +
+                 $"    </mat-form-field>";
+      }
+      else
+      {
+          return $"<mat-form-field appearance=\"outline\" subscriptSizing=\"dynamic\">{NewLine}" +
+                 $"      <mat-label>{label}</mat-label>{NewLine}" +
+                 $"      <input matInput [(ngModel)]=\"filterDto.{camelFieldName}\" />{NewLine}" +
+                 $"    </mat-form-field>";
+      }
+  }
 }
 <div class="@camel-list-page">
   <div class="toolbar">
     <div class="d-flex align-items-center gap-2 justify-content-between p-1">
-      <div class="d-flex gap-2">
+      <div class="d-flex gap-2 align-items-center">
         @foreach (var f in FilterPropertyInfos)
         {
-          <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            @if (f.Type != null && f.Type.ToLower().Contains("string"))
-            {
-              <mat-label>@(f.CommentSummary ?? f.Name)</mat-label>
-              <input matInput [(ngModel)]="filter.@(f.Name.ToCamelCase())" placeholder="@(f.CommentSummary ?? f.Name)" />
-            }
-            else if (f.IsEnum)
-            {
-              <mat-label>@(f.CommentSummary ?? f.Name)</mat-label>
-              <mat-select [(ngModel)]="filter.@(f.Name.ToCamelCase())">
-                <mat-option *ngFor="let opt of @(f.Type) | toKeyValue" [value]="opt.value">
-                  {{ opt.value | enumText:'@(f.Type)' }}
-                </mat-option>
-              </mat-select>
-            }
-            else if (f.Type != null && f.Type.ToLower().Contains("guid"))
-            {
-              <mat-label>@(f.CommentSummary ?? f.Name)</mat-label>
-              <input matInput 
-                     [(ngModel)]="filter.@(f.Name.ToCamelCase())" 
-                     [matAutocomplete]="@(f.Name.ToCamelCase())Auto"
-                     placeholder="@(f.CommentSummary ?? f.Name)" />
-              <mat-autocomplete #@(f.Name.ToCamelCase())Auto="matAutocomplete">
-                <mat-option *ngFor="let opt of @(f.Name.ToCamelCase())Options" [value]="opt.id">
-                  {{ opt.name }}
-                </mat-option>
-              </mat-autocomplete>
-            }
-            else
-            {
-              <mat-label>@(f.CommentSummary ?? f.Name)</mat-label>
-              <input matInput [(ngModel)]="filter.@(f.Name.ToCamelCase())" />
-            }
-          </mat-form-field>
+          WriteLiteral(RenderFilterField(f));
         }
+
         <button matButton="filled" (click)="filter()">{{ i18nKeys.common.search| translate }}</button>
       </div>
 
@@ -85,6 +110,6 @@
 
   </table>
 
-  <mat-paginator [length]="total" [pageSize]="filter.pageSize" (page)="pageChanged($event)"></mat-paginator>
+  <mat-paginator [length]="total" [pageSize]="filterDto.pageSize" (page)="pageChanged($event)"></mat-paginator>
 
 </div>

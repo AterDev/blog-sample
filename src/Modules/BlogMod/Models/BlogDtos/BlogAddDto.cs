@@ -1,4 +1,3 @@
-using Entity.BlogMod;
 namespace BlogMod.Models.BlogDtos;
 /// <summary>
 /// 博客AddDto
@@ -16,10 +15,6 @@ public class BlogAddDto
     /// </summary>
     [MaxLength(50000)]
     public string Content { get; set; } = default!;
-    /// <summary>
-    /// 作者ID
-    /// </summary>
-    public Guid AuthorId { get; set; } = default!;
 
     /// <summary>
     /// 分类ID集合（如果为空或null，则默认添加到"未分类"）

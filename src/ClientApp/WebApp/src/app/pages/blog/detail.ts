@@ -1,6 +1,8 @@
-import { Component, Inject, OnInit } from '@angular/core';
+
+import { Component, Inject, OnInit, signal } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatListModule } from '@angular/material/list';
+import { MatCard, MatCardHeader, MatCardTitle, MatCardContent, MatCardActions } from '@angular/material/card';
 import { AdminClient } from 'src/app/services/admin/admin-client';
 import { I18N_KEYS } from 'src/app/share/i18n-keys';
 import { BaseMatModules } from 'src/app/share/shared-modules';
@@ -8,7 +10,7 @@ import { BlogDetailDto } from 'src/app/services/admin/models/blog-mod/blog-detai
 
 @Component({
   selector: 'app-blog-detail',
-  imports: [BaseMatModules, MatListModule],
+  imports: [BaseMatModules, MatListModule, MatCard, MatCardHeader, MatCardTitle, MatCardContent, MatCardActions],
   templateUrl: './detail.html'
 })
 export class BlogDetail implements OnInit {
@@ -17,6 +19,7 @@ export class BlogDetail implements OnInit {
 
   model!: BlogDetailDto;
   id?: string;
+  isLoading = signal(true);
 
   constructor(
     private adminClient: AdminClient,
@@ -28,7 +31,10 @@ export class BlogDetail implements OnInit {
 
   ngOnInit() {
     if (this.id) {
-      this.adminClient.blog.detail(this.id).subscribe((res: BlogDetailDto) => this.model = res);
+      this.adminClient.blog.detail(this.id).subscribe((res: BlogDetailDto) => {
+        this.model = res;
+        this.isLoading.set(false);
+      });
     }
   }
 

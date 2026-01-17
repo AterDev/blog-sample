@@ -15,16 +15,20 @@ import { TranslateService } from '@@ngx-translate/core';
 import { AdminClient } from 'src/app/services/admin/admin-client';
 import { I18N_KEYS } from 'src/app/share/i18n-keys';
 import { CommonFormModules, CommonListModules } from 'src/app/share/shared-modules';
+import { MatAutocompleteModule } from '@@angular/material/autocomplete';
 @{ if (hasEnumFilter) { WriteLiteral("import { ToKeyValuePipe } from 'src/app/share/pipe/to-key-value.pipe';\n"); WriteLiteral("import { EnumTextPipe } from 'src/app/pipe/admin/enum-text.pipe';\n"); } }
 @{ if (hasIdFilter) { WriteLiteral("import { forkJoin, Observable } from 'rxjs';\n"); WriteLiteral("import { PageList } from 'src/app/services/admin/models/perigon/page-list.model';\n"); } }
 @{ 
   foreach (var field in idFilterFields) 
   { 
-    var navigationName = field.NavigationName ?? field.Name.Replace("Id", "");
+    var camelField = field.Name.ToCamelCase();
+    var optionsField = (camelField.EndsWith("s") ? camelField.Substring(0, camelField.Length - 1) : camelField) + "Options";
+    var navigationName = field.NavigationName ?? field.Name.Replace("Id", "").Replace("s", "");
     var pascalNavigationName = navigationName.Substring(0, 1).ToUpper() + navigationName.Substring(1);
     var itemDtoType = pascalNavigationName + "ItemDto";
-    var moduleName = (Namespace ?? string.Empty).Split('.').FirstOrDefault()?.ToLower() ?? string.Empty;
-    WriteLiteral($"import {{ {itemDtoType} }} from 'src/app/services/admin/models/{moduleName}-mod/{navigationName.ToHyphen()}-item-dto.model';\n");
+    var namespaceParts = (Namespace ?? string.Empty).Split('.');
+    var moduleName = namespaceParts.Length > 1 ? namespaceParts[1].ToHyphen() : string.Empty;
+    WriteLiteral($"import {{ {itemDtoType} }} from 'src/app/services/admin/models/{moduleName}/{navigationName.ToHyphen()}-item-dto.model';\n");
   }
 }
 import { ConfirmDialogComponent } from 'src/app/share/components/confirm-dialog/confirm-dialog.component';
@@ -34,12 +38,12 @@ import { @(ModelName)Add } from './add';
 import { @(ModelName)Edit } from './edit';
 import { @(ModelName)Detail } from './detail';
 
-@{ WriteLiteral("@Component({\n  selector: 'app-" + camel + "-index',\n  imports: [CommonListModules, CommonFormModules" + enumImports + "],\n  templateUrl: './index.html'\n})\n"); }
+@{ WriteLiteral("@Component({\n  selector: 'app-" + camel + "-index',\n  imports: [CommonListModules, CommonFormModules, MatAutocompleteModule" + enumImports + "],\n  templateUrl: './index.html'\n})\n"); }
 export class @(ModelName)Index implements OnInit {
 
   i18nKeys = I18N_KEYS;
 
-  filter: @(ModelName)FilterDto = { pageIndex: 1, pageSize: 10 };
+  filterDto: @(ModelName)FilterDto = { pageIndex: 1, pageSize: 10 };
   dataSource = new MatTableDataSource<@(ModelName)ItemDto>();
   displayedColumns = [ @( string.Join(", ", ItemPropertyInfos.Select(c => $"\"{c.Name}\"")) ), "actions" ];
 
@@ -48,10 +52,12 @@ export class @(ModelName)Index implements OnInit {
 @{ 
   foreach (var field in idFilterFields) 
   { 
-    var navigationName = field.NavigationName ?? field.Name.Replace("Id", "");
+    var camelField = field.Name.ToCamelCase();
+    var optionsField = (camelField.EndsWith("s") ? camelField.Substring(0, camelField.Length - 1) : camelField) + "Options";
+    var navigationName = field.NavigationName ?? field.Name.Replace("Id", "").Replace("s", "");
     var pascalNavigationName = navigationName.Substring(0, 1).ToUpper() + navigationName.Substring(1);
     var itemDtoType = pascalNavigationName + "ItemDto";
-    WriteLiteral($"  {field.Name.ToCamelCase()}Options: {itemDtoType}[] = [];\n");
+    WriteLiteral($"  {optionsField}: {itemDtoType}[] = [];\n");
   } 
 }
 
@@ -76,19 +82,20 @@ export class @(ModelName)Index implements OnInit {
     for (int i = 0; i < idFilterFields.Count; i++)
     {
       var camelField = idFilterFields[i].Name.ToCamelCase();
-      WriteLiteral($"        this.{camelField}Options = results[{i}].data || [];\n");
+      var optionsField = (camelField.EndsWith("s") ? camelField.Substring(0, camelField.Length - 1) : camelField) + "Options";
+      WriteLiteral($"        this.{optionsField} = results[{i}].data || [];\n");
     }
     WriteLiteral("      }\n");
     WriteLiteral("    });\n");
   }
 }
-    this.filter();
+    this.loadData();
   }
 
 @{
   foreach (var field in idFilterFields)
   {
-    var navigationName = field.NavigationName ?? field.Name.Replace("Id", "");
+    var navigationName = field.NavigationName ?? field.Name.Replace("Id", "").Replace("s", "");
     var pascalNavigationName = navigationName.Substring(0, 1).ToUpper() + navigationName.Substring(1);
     var camelField = field.Name.ToCamelCase();
     var itemDtoType = pascalNavigationName + "ItemDto";
@@ -98,31 +105,36 @@ export class @(ModelName)Index implements OnInit {
   }
 }
 
-  filter(): void {
-    this.adminClient.@(camel).list(this.filter).subscribe((res) => {
+  loadData(): void {
+    this.adminClient.@(camel).list(this.filterDto as @(ModelName)FilterDto).subscribe((res) => {
       this.dataSource.data = (res.data || []);
       this.total = (res.count ?? res.data?.length ?? this.dataSource.data.length);
     });
   }
 
+  filter(): void {
+    this.filterDto.pageIndex = 1;
+    this.loadData();
+  }
+
   pageChanged(e: any) {
-    this.filter.pageIndex = e.pageIndex + 1;
-    this.filter.pageSize = e.pageSize;
-    this.filter();
+    this.filterDto.pageIndex = e.pageIndex + 1;
+    this.filterDto.pageSize = e.pageSize;
+    this.loadData();
   }
 
   openAdd() {
     const ref = this.dialog.open(@(ModelName)Add, { width: '800px' });
-    ref.afterClosed().subscribe((r: boolean) => { if (r) this.filter(); });
+    ref.afterClosed().subscribe((r: boolean) => { if (r) this.loadData(); });
   }
 
   openEdit(id: string) {
     const ref = this.dialog.open(@(ModelName)Edit, { width: '800px', data: { id } });
-    ref.afterClosed().subscribe((r: boolean) => { if (r) this.filter(); });
+    ref.afterClosed().subscribe((r: boolean) => { if (r) this.loadData(); });
   }
 
   openDetail(id: string) {
-    this.dialog.open(@(ModelName)Detail, { width: '800px', data: { id } });
+    this.dialog.open(@(ModelName)Detail, { minWidth: '600px', data: { id } });
   }
 
   deleteItem(id: string) {
@@ -133,7 +145,7 @@ export class @(ModelName)Index implements OnInit {
       }
     });
     ref.afterClosed().subscribe((ok: boolean) => {
-      if (ok) { this.adminClient.@(camel).delete(id).subscribe(() => this.filter()); }
+      if (ok) { this.adminClient.@(camel).delete(id).subscribe(() => this.loadData()); }
     });
   }
 }

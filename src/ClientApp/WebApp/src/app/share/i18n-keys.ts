@@ -9,6 +9,7 @@ export const I18N_KEYS = {
     "noData": "common.noData",
     "actions": "common.actions",
     "view": "common.view",
+    "detail": "common.detail",
     "edit": "common.edit",
     "delete": "common.delete",
     "add": "common.add",

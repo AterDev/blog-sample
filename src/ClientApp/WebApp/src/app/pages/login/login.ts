@@ -86,7 +86,7 @@ export class Login implements OnInit, AfterViewInit {
     this.adminClient.user.detail()
       .subscribe(res => {
         this.authService.saveUserInfo(res);
-        this.router.navigate(['/index']);
+        this.router.navigate(['/']);
       });
   }
 

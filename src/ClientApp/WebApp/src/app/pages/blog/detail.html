@@ -1,26 +1,46 @@
-<div class="detail-view" style="padding:16px;">
 
-  <mat-list>
-    <mat-list-item>
-      <strong style="width:160px;display:inline-block;">标题:</strong>
-      <span>{{ model.title }}</span>
-    </mat-list-item>
-    <mat-list-item>
-      <strong style="width:160px;display:inline-block;">内容:</strong>
-      <span style="white-space:pre-wrap">{{ model.content }}</span>
-    </mat-list-item>
-    <mat-list-item>
-      <strong style="width:160px;display:inline-block;">作者ID:</strong>
-      <span>{{ model.authorId }}</span>
-    </mat-list-item>
-    <mat-list-item>
-      <strong style="width:160px;display:inline-block;">创建时间:</strong>
-      <span>{{ model.createdTime | date:'short' }}</span>
-    </mat-list-item>
-  </mat-list>
-
-  <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+@if (!isLoading()) {<mat-card>
+  <mat-card-header>
+    <mat-card-title>{{ i18nKeys.common.detail | translate }} Blog</mat-card-title>
+  </mat-card-header>
+  <mat-card-content class="d-flex gap-2 p-2">
+    <mat-list>
+        <mat-list-item>
+          <strong style="width:160px;display:inline-block;">标题:</strong>
+          <span>{{ model.title }}</span>
+        </mat-list-item>
+        <mat-list-item>
+          <strong style="width:160px;display:inline-block;">内容:</strong>
+          <span style="white-space:pre-wrap">{{ model.content }}</span>
+        </mat-list-item>
+        <mat-list-item>
+          <strong style="width:160px;display:inline-block;">作者ID:</strong>
+          <span>{{ model.authorId }}</span>
+        </mat-list-item>
+        <mat-list-item>
+          <strong style="width:160px;display:inline-block;">分类信息:</strong>
+          <span>{{ model.categories }}</span>
+        </mat-list-item>
+        <mat-list-item>
+          <strong style="width:160px;display:inline-block;">Id:</strong>
+          <span>{{ model.id }}</span>
+        </mat-list-item>
+        <mat-list-item>
+          <strong style="width:160px;display:inline-block;">CreatedTime:</strong>
+          <span>{{ model.createdTime | date:'short' }}</span>
+        </mat-list-item>
+        <mat-list-item>
+          <strong style="width:160px;display:inline-block;">UpdatedTime:</strong>
+          <span>{{ model.updatedTime | date:'short' }}</span>
+        </mat-list-item>
+        <mat-list-item>
+          <strong style="width:160px;display:inline-block;">TenantId:</strong>
+          <span>{{ model.tenantId }}</span>
+        </mat-list-item>
+    </mat-list>
+  </mat-card-content>
+  <mat-card-actions class="d-flex justify-content-end gap-2">
     <button mat-button (click)="close()">{{ i18nKeys.common.close | translate }}</button>
-  </div>
-
-</div>
+  </mat-card-actions>
+</mat-card>
+}
